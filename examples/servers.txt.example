@@ -1,0 +1,8 @@
+# My Servers (Comments will be ignored by script)
+host1 group1
+host2 group1
+host3 group1
+# Next group starts here
+host4 group2
+host5 group2
+host6 group2

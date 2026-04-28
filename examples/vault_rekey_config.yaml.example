@@ -1,0 +1,6 @@
+---
+vault_instance: "https://vault.example.com"
+backend_path: "path/to/secret/ansible_vault"
+iac_directory: "~/path/to/ansible"
+# Optional: If you want to use a custom temporary directory
+tmp_directory: "/tmp"
