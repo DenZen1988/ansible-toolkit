@@ -1,0 +1,69 @@
+---
+- name: Intelligently restart services
+  hosts: all
+  become: true
+
+  tasks:
+    # The script has multiple options:
+    # -e auto=true to automatically determine which services to restart based on config changes
+    # -e noop=true to do a dry run without actually restarting services
+    # -e service_list="service1 service2 service3" to specify a space-separated list of services to restart
+    - name: Execute service restart script
+      ansible.builtin.script:
+        cmd: >-
+          ../../scripts/restart_services.py
+          {% if auto | default(false) | bool %}--auto{% endif %}
+          {% if noop | default(false) | bool %}--noop{% endif %}
+          {% if service_list is defined and service_list != '' %}--services {{ service_list }}{% endif %}
+      register: script_run
+      failed_when: script_run.rc != 0
+      changed_when: false
+
+    # Print the output of the script for debugging purposes
+    - name: Show restart script output
+      ansible.builtin.debug:
+        var: script_run.stdout_lines
+
+    # Check if Nginx actually needs a restart
+    - name: Check if Nginx requires a restart via needrestart
+      ansible.builtin.shell: "set -o pipefail && needrestart -b | grep -E '^NEEDRESTART-SVC: nginx'"
+      args:
+        executable: /bin/bash
+      register: nginx_needs_restart
+      failed_when: false
+      changed_when: false
+
+    # Handle Nginx gracefully (Real Run)
+    - name: Gracefully upgrade Nginx instances (Real Run)
+      ansible.builtin.shell: |
+        set -o pipefail
+        for script in /etc/init.d/nginx*; do
+        if [ -x "$script" ]; then
+        echo "Upgrading via $script"
+        $script upgrade
+        fi
+        done
+      args:
+        executable: /bin/bash
+      register: nginx_upgrade
+      changed_when: '"Upgrading via" in nginx_upgrade.stdout'
+      when: not (noop | default(false) | bool) and (nginx_needs_restart.rc == 0 or 'nginx' in service_list | default(''))
+
+    # Handle Nginx gracefully (NOOP / Dry Run)
+    - name: Gracefully upgrade Nginx instances (NOOP)
+      ansible.builtin.debug:
+        msg: "[NOOP] Would gracefully upgrade Nginx via /etc/init.d/nginx* upgrade"
+      when: (noop | default(false) | bool) and (nginx_needs_restart.rc == 0 or 'nginx' in service_list | default(''))
+
+    # Restart user systemd sessions to clear outdated binaries (only on real runs)
+    - name: Restart user systemd sessions to clear outdated binaries
+      ansible.builtin.shell: |
+        set -o pipefail
+        for uid in $(loginctl list-users --no-legend | awk '{print $1}'); do
+        systemctl restart user@$uid.service || true
+        done
+      args:
+        executable: /bin/bash
+      failed_when: false
+      when: not (noop | default(false) | bool)
+      changed_when: false

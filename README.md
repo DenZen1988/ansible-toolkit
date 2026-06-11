@@ -219,6 +219,28 @@ This script will remove the pain of manually rekeying any ansible vaulted files.
     * `./rekey.py -p` - push the new password to your HashiCorp Vault
     * `./rekey.py -c` - cleanup the temporary files (just in case)
 
+### scripts/restart_services\.py
+
+> [!WARNING]
+> The script and playbook only work if you have `needrestart` installed on your target system(s)!
+
+After the update of some packages (like "openssl") it is needed to restart services. If you have a lot of servers this will be a huge and time
+consuming task. Therefore you can just use the script `restart_services.py` to do it for you.
+
+You could run it manually, but it is highly recommended to use a playbook. An example can be found in ![examples/service_restarts.yml](examples/service_restarts.yml.example).
+
+Place it in you `playbooks` folder and run it like this:
+
+```bash
+ansible-playbook playbooks/service_restarts.yml --limit='*only_specific_hosts*' -e "noop=true"
+```
+
+The above example ahows the noop run. Other options are:
+
+* `auto=true`: Fetch a list of services from `needrestart` and automatically restart them - excluding the `CRITICAL_SERVICES`
+(can be modified within the top of the script)
+* `service_list=service1 service2 service3"`: Provide a list of services to be restarted (overrides the standard logic)
+
 #### Security Features
 
 * Git integrity - *The script refuses to run if there are uncommitted changes before you start*

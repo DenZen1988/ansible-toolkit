@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-06-11
+
+### Added
+
+* Added scripts/restart_services.py
+* Added examples/service_restarts.yml.example
+
 ## [0.0.1] - 2026-04-28
 
 ### Added
@@ -18,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [0.0.0] - 2026-04-28 (Initial Release)
 
-[unreleased]: https://github.com/DenZen1988/ansible-toolkit/compare/default...0.0.1
-[0.0.1]: https://github.com/DenZen1988/ansible-toolkit/compare/default...0.0.1
+[unreleased]: https://github.com/DenZen1988/ansible-toolkit/compare/default...0.0.2
+[0.0.2]: https://github.com/DenZen1988/ansible-toolkit/compare/0.0.1...0.0.2
+[0.0.1]: https://github.com/DenZen1988/ansible-toolkit/compare/0.0.0..0.0.1
 [0.0.0]: https://github.com/DenZen1988/ansible-toolkit/compare/default...0.0.0
